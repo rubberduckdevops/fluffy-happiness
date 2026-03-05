@@ -12,7 +12,7 @@ fn try_read(gpio_number: u32) -> Option<Reading> {
     let mut final_result = None;
     let all_data = push_pull(gpio_number);
     if all_data.len() < 40 {
-        println!("Saad, read not enough data");
+        tracing::warn!("Saad, read not enough data");
         return final_result;
     }
     for data in all_data.windows(40) {
@@ -23,7 +23,7 @@ fn try_read(gpio_number: u32) -> Option<Reading> {
                 break;
             }
             Err(e) => {
-                println!("Error: {:?}", e)
+                tracing::error!("Error: {:?}", e)
             }
         }
     }
@@ -57,11 +57,8 @@ fn main() {
     let gpio_number = 4; // GPIO4  (7)
     let sleep_time = time::Duration::from_secs(5);
     tracing::info!("GPIO: {}", &gpio_number);
-    for _ in 1..30 {
-        println!(
-            "Sleeping for another {:?}, to be sure that device is ready",
-            sleep_time
-        );
+    loop {
+        tracing::debug!("Sleeping for another {:?}, to be sure device is ready", sleep_time);
         thread::sleep(sleep_time);
         match try_read(gpio_number) {
             Some(reading) => {
@@ -70,4 +67,18 @@ fn main() {
             None => tracing::warn!("Unable to get the data"),
         }
     }
+
+    // for _ in 1..30 {
+    //     println!(
+    //         "Sleeping for another {:?}, to be sure that device is ready",
+    //         sleep_time
+    //     );
+    //     thread::sleep(sleep_time);
+    //     match try_read(gpio_number) {
+    //         Some(reading) => {
+    //             tracing::info!("Reading: {:?}", reading);
+    //         },
+    //         None => tracing::warn!("Unable to get the data"),
+    //     }
+    // }
 }
